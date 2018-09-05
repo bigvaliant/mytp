@@ -126,7 +126,7 @@ class Orders extends Base
     {
         do {
             $order_no= date('Ymd').$this->builderRand();
-        } while ($this->where('order_no',$order_no)->count()==1); //为了防止订单号的重复，这里使用一次查库过滤
+        } while ($this->where('order_no',$order_no)->count()>0); //为了防止订单号的重复，这里使用一次查库过滤
         return $order_no ;
     }
 

@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: ÎÒµÄµçÄÔ
- * Date: 2018/9/4
- * Time: 9:44
- */
-
 namespace app\index\controller;
 
 use app\base\controller\ReturnCode;

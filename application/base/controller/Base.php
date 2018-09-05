@@ -2,13 +2,17 @@
 namespace app\base\controller;
 
 use think\Cache;
+use think\Config;
 use think\Controller;
+use think\Exception;
+use think\Log;
 use think\Session;
 use think\Loader;
 abstract class Base extends Controller
 {
     protected $error;             //出错时候的记录
     protected $log=[];            //要保存的记录
+    protected $uuid;
     protected $saveLog = false ;
 
 
@@ -52,9 +56,40 @@ abstract class Base extends Controller
         return $data;
     }
 
+    public function create_uuid($baseCode = '')
+    {
+        $baseCode = empty($baseCode) ? "UU" : $baseCode;
+        $uuid = $baseCode . strtoupper(uniqid()) . self::builderRand(6);
+        return $uuid;
+    }
+
+    /**
+     * 创建随机数
+     * @param int $num  随机数位数
+     * @return string
+     */
+    static public function builderRand($num=8){
+        return substr(implode(NULL, array_map('ord', str_split(substr(uniqid(), 7, 13), 1))), 0, $num);
+    }
+
     static public function showReturnCodeWithOutData($code = '', $msg = '')
     {
         return self::showReturnCode($code,[],$msg);
+    }
+
+    static public function showJsonReturnCode($code = '', $data = [], $msg = ''){
+        Config::set(['default_return_type'    => 'json',]);
+        return self::showReturnCode($code, $data, $msg);
+    }
+    /**
+     * 获取返回码数组别名函数 以json格式返回 无返回值
+     * @param string $code
+     * @param string $msg
+     * @return array
+     */
+    static public function showJsonReturnCodeWithOutData($code = '', $msg = ''){
+        Config::set(['default_return_type'    => 'json',]);
+        return self::showReturnCode($code, [], $msg);
     }
 
     /**
@@ -76,7 +111,7 @@ abstract class Base extends Controller
             $data = $save_data;
         }
         if (!$data) return $this->showReturnCode(1004);
-        if ($this->checkLoginToken() && !isset($data['uuid'])) $data['uuid'] = $this->uuid;
+//        if ($this->checkLoginToken() && !isset($data['uuid'])) $data['uuid'] = $this->uuid;
         if ($validate_name != false) {
             $result = $this->validate($data, $validate_name);
             if (true !== $result) return $this->showReturnCodeWithOutData(1003,$result );

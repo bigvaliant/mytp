@@ -11,5 +11,7 @@ return [
     'var_jsonp_handler'      => 'callback',
     // 默认时区
     'default_timezone'       => 'PRC',
+    //默认登录类型
+    'login_type'=>'session'
 
 ];
