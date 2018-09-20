@@ -15,6 +15,16 @@ abstract class Base extends Controller
     protected $uuid;
     protected $saveLog = false ;
 
+    /**
+     * 获取当前类名称
+     * @param bool|false $all
+     * @return string
+     */
+    public function getClassName($all = false){
+        return $all
+            ? get_called_class()
+            : basename(str_replace('\\', '/', get_called_class()),'.php');
+    }
 
     /**
      * @param string $code

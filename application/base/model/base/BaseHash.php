@@ -1,0 +1,224 @@
+<?php
+/**
+ * Created by Nietai    .
+ * User: 我的电脑
+ * Date: 2018/9/6
+ * Time: 9:43
+ */
+
+namespace app\base\model\base;
+
+
+use app\base\model\Base;
+use mikkle\tp_master\Db;
+use mikkle\tp_redis\RedisHash;
+
+class BaseHash extends Base
+{
+    protected $hashKey;
+    protected $hashKeyValue;
+    public $RedisHash;
+    public function __construct($data = [])
+    {
+        parent::__construct($data);
+        $this->RedisHash = RedisHash::instance()->setTable($this->table);
+        if (!isset($this->hashKey)){
+            if ($this->hasColumn("guid")){
+                $this->hashKey="guid";
+            }
+        }
+    }
+
+    /**
+     * Power: Mikkle
+     * Email：776329498@qq.com
+     * @param $key
+     * @param array $field
+     * @param array $data
+     * @return mixed
+     */
+    public static function quickGet($key,$field=[],$data = [])
+    {
+        $hash = new static($data);
+        $return_data = $hash->getHashByKey($key,$field);
+        if ($return_data==null){
+            $hash_key = $hash->getHashKey();
+//            $hash->where([$hash_key=>$key])->find();
+            $return_data = $hash->where([$hash_key=>$key])->find();
+//            $return_data = Db::table($hash->table)->where([$hash_key=>$key])->find();
+            if ($return_data){
+                $return_data = $return_data->toArray();
+                $hash->setHashByKey($key,$return_data);
+//                $return_data->RedisHash->setKey($key)->set($data);
+            }
+//            $hash_data= $hash->getHashByKey($key,$field);
+        }
+        return $return_data;
+
+    }
+
+    protected function setHashByKey($key,$field)
+    {
+        if($this->RedisHash->checkIfConnect()){
+            $this->RedisHash->setKey($key)->set($field);
+        }
+    }
+
+    protected function getHashByKey($key,$field=[]){
+        if($this->RedisHash->checkIfConnect()){
+            return $this->RedisHash->setKey($key)->get($field);
+        }
+
+        return null;
+    }
+
+    protected function getHashKey(){
+        $this->hashKey = isset($this->hashKey) ? $this->hashKey : $this->getPk();
+        return $this->hashKey;
+    }
+    public  function getHashKeyValue(BaseHash $hash){
+        $hash_key = $hash->getHashKey();
+        $pk = $hash->getPk();
+        $hash_data = $hash->getData();
+        switch(true){
+            case (empty($hash_data)):
+                return false;
+                break;
+            case (empty($hash->updateWhere)):
+                switch(true){
+                    case (isset($hash_data[$hash_key])):
+                        switch(true){
+                            case (is_string($hash_data[$hash_key]) || is_numeric($hash_data[$hash_key])):
+                                return $hash_data[$hash_key];
+                                break;
+                            default:
+                                return false;
+                        }
+                        break;
+                    case(isset($hash_data[$pk])):
+                        switch(true){
+                            case (is_string($hash_data[$pk]) || is_numeric($hash_data[$pk])):
+                                return $hash_data[$pk];
+                                break;
+                            default:
+                                return false;
+                        }
+                        break;
+                    default:
+                        return false;
+                }
+                break;
+            case (isset($hash->updateWhere[$hash_key])):
+                switch(true){
+                    case (is_string($hash->updateWhere[$hash_key]) || is_numeric($hash->updateWhere[$hash_key])):
+                        return $hash->updateWhere[$hash_key];
+                        break;
+                    case (is_array($hash->updateWhere[$hash_key])):
+                        return $hash->where($hash->updateWhere)->column($hash_key);
+                        break;
+                    default:
+                        return false;
+                }
+                break;
+            case (!isset($hash->updateWhere[$hash_key]) && $hash_key!= $pk ):
+                return $hash->where($hash->updateWhere)->column($hash_key);
+                break;
+
+            case(!isset($hash->updateWhere[$hash_key]) && $hash_key == $pk ):
+                switch(true){
+                    case (is_string($hash->updateWhere[$hash_key]) || is_numeric($hash->updateWhere[$hash_key])):
+                        return $hash->updateWhere[$hash_key];
+                        break;
+                    case (is_array($hash->updateWhere[$hash_key])):
+                        return $hash->where($hash->updateWhere)->column($hash_key);
+                        break;
+                    default:
+                        return false;
+                }
+                break;
+            default :
+                return false;
+        }
+
+    }
+
+
+    static protected function init()
+    {
+        parent::init(); // TODO: Change the autogenerated stub
+        self::event('after_insert', function (BaseHash $model) {
+            $model->insertHash($model);
+        });
+        self::event('after_update', function (BaseHash $model) {
+            $model->updateHash($model);
+        });
+
+        self::event('after_delete', function (BaseHash $model) {
+            $model->deleteHash($model);
+        });
+    }
+
+
+    static protected function deleteHash(BaseHash $hash){
+        if (empty($hash->getData())) return false;
+        $hash_key_value = $hash->getHashKeyValue($hash);
+        //11月14日更新
+        $hash->RedisHash->setKey($hash_key_value)->deleteByKey();
+    }
+
+    static protected function insertHash(BaseHash $hash){
+        switch(true){
+            case(empty($hash->getData())):
+                return false;
+                break;
+            case($hash->isUpdate):
+                $hash_key_value = $hash->getHashKeyValue($hash);
+                switch(true){
+                    case (is_string($hash_key_value) || is_numeric($hash_key_value)):
+                        $hash->RedisHash->setKey($hash_key_value)->set($hash->toArray());
+                        break;
+                    case (is_array($hash_key_value)):
+                        foreach($hash_key_value as $value ){
+                            $hash->RedisHash->setKey($value)->set($hash->toArray());
+                        }
+                        break;
+                    default:
+                        return false;
+                }
+                break;
+            default :
+                return false;
+                break;
+        }
+    }
+
+    static protected function updateHash(BaseHash $hash){
+        switch(true){
+            case(empty($hash->getData())):
+                return false;
+                break;
+            case($hash->isUpdate):
+                $hash_key_value = $hash->getHashKeyValue($hash);
+                switch(true){
+                    case (is_string($hash_key_value) || is_numeric($hash_key_value)):
+                        if ($hash->RedisHash->setKey($hash_key_value)->exists()){
+                            $hash->RedisHash->setKey($hash_key_value)->set($hash->getData());
+                        }
+                        break;
+                    case (is_array($hash_key_value)):
+                        foreach($hash_key_value as $value ){
+                            if ($hash->RedisHash->setKey($hash_key_value)->exists()) {
+                                $hash->RedisHash->setKey($value)->set($hash->getData());
+                            }
+                        }
+                        break;
+                    default:
+                        return false;
+                }
+                break;
+            default :
+                return false;
+                break;
+        }
+    }
+}

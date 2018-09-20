@@ -25,4 +25,8 @@ return [
     'log_write'    => [],
     // 应用结束
     'app_end'      => [],
+    //异步钩子
+    'hook_test'=>[
+        "app\\base\\behavior\\worker\\Test",
+    ],
 ];

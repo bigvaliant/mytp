@@ -1,6 +1,6 @@
 <?php
 // +----------------------------------------------------------------------
-// | ThinkPHP [ WE CAN DO IT JUST THINK ]
+// | ThinkPHP [ WE CAN DO IT JUST THINK IT ]
 // +----------------------------------------------------------------------
 // | Copyright (c) 2006-2016 http://thinkphp.cn All rights reserved.
 // +----------------------------------------------------------------------
@@ -10,6 +10,5 @@
 // +----------------------------------------------------------------------
 
 return [
-    'app\base\command\Mikkle',
-    'app\base\command\Multiprocess',
+    'connector' => 'Redis'  //队列采用redis模式
 ];

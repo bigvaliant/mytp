@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <div>
+        <!--后台签名的值：<span id="test">{$sign}</span>-->
+    </div>
+    <form action="{:url('api/rsa/index')}" method="post" id="form">
+        <input type="hidden" id="type" name="type" value="">
+        <textarea id="verify">{$sign}</textarea>
+        <label>账号</label>
+        <input type="text" id="username" name="username" value="nietai">
+        <label>密码</label>
+        <input type="text" id="password" name="password" value="">
+        <input id="testme" type="button" value="加密提交" /><br/>
+        <input id="sign" type="button" value="签名提交" /><br/>
+    </form>
+    <script src="__STATIC__/js/jquery.min.js"></script>
+    <script src="__STATIC__/js/jsencrypt.js"></script>
+    <script src="__STATIC__/lib/crypto-js/src/core.js"></script>
+    <!--<script src="__STATIC__/lib/crypto-js/src/sha256.js"></script>-->
+    <script src="__STATIC__/lib/crypto-js/src/enc-base64.js"></script>
+    <script src="__STATIC__/lib/crypto-js/src/md5.js"></script>
+    <script type="text/javascript">
+        $(function() {
+
+            // Run a quick encryption/decryption when they click.
+            $('#testme').click(function() {
+                $("#type").val('jiami');
+                // Encrypt with the public key...
+                var encrypt = new JSEncrypt();
+                var publicKey="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDA4acn6IGiudGhbS6gxu12j2TXU1kc+ixnZf03TKdlCuIW4lmh29qC8ZKuFMMA6yvOKRxeWzNRioEgl0+qRnqB5+JV0lr42H+imCEZ7Azx55WMS8KB3jIKdxaVsabgxT1QRrJS1iWfgfZey9kRjuc7f9jl/FIOeno8UmC2FWKMRQIDAQAB";
+                encrypt.setPublicKey(publicKey);
+                var encrypted = encrypt.encrypt($('#password').val());
+                $('#password').val(encrypted);
+                $("#form").submit();
+                // Decrypt with the private key...
+//                var decrypt = new JSEncrypt();
+//                decrypt.setPrivateKey($('#privkey').val());
+//                var uncrypted = decrypt.decrypt(encrypted);
+
+                // Now a simple check to see if the round-trip worked.
+//                if (uncrypted == $('#input').val()) {
+//                    alert('It works!!!');
+//                }
+//                else {
+//                    alert('Something went wrong....');
+//                }
+            });
+            $('#sign').click(function() {
+                // Encrypt with the public key...
+                var sign  = new JSEncrypt();
+                var privakey="MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAMDhpyfogaK50aFt" +
+                        "LqDG7XaPZNdTWRz6LGdl/TdMp2UK4hbiWaHb2oLxkq4UwwDrK84pHF5bM1GKgSCX" +
+                        "T6pGeoHn4lXSWvjYf6KYIRnsDPHnlYxLwoHeMgp3FpWxpuDFPVBGslLWJZ+B9l7L" +
+                        "2RGO5zt/2OX8Ug56ejxSYLYVYoxFAgMBAAECgYABACqx1k713SjtQXfAdce9mbjY" +
+                        "NSJ9N/8K+kh6BPfJWmkZ3UrBwDY9/6rXJFxuoMm1ZBk1lBuMDL/mv2I2a+8uwwhn " +
+                        "+Slow7k6Zi+HCNPHXTC7VpZZiDy0Dv3M5ANgUpES2dS05hyBVRLJbK9gv0r+oRBf" +
+                        "yakbG+C550z6ggf/8QJBAPPfkXKE+a5mxSVyFdvsZtOUohu0/OFDTh48Clo9Kmrg" +
+                        "K7lbYtd7ut/FeeojzxHdh5gcscDGywewhaDoezapSd8CQQDKePln1IvdTXqASrV9" +
+                        "cbeGYOStRqcucwfe+8MzEh5NQ/s2VOHTcRalHPFTjQdA/zhg9MlJ7hKE+5KIJYzu" +
+                        "5/ZbAkEAxqdiKoAphyhOBZ+2MKyUYlub5af7ql+SHczYvgM/L0omM9o+XLt8UVXi" +
+                        "Zpj+z1W+Y2lUXm1Q65WedKGL5M3nzwJBAL7xWVuW8ZPxll5YllHIJWiABgh3QgCn" +
+                        "ELw0N8D5DESXoNh7MkECPHXYFqpRrI6aYiPlldK3xxVMXsMwjnlbnlMCQQDx+zoF" +
+                        "dSkV+V06/WKwNkeZkY/gRxIOL0qifMcv7tzkrIiKfLRKrS5s+x+AM9o4jcybiwCo" +
+                        "fl7yP7D2i2JhC6xe";
+                sign.setPrivateKey(privakey);
+//                var str = CryptoJS.enc.Utf8.parse("张");
+//                alert(str);
+//                var base64 = CryptoJS.enc.Base64.stringify(str);
+//                alert(base64);
+//                var words = CryptoJS.enc.Base64.parse(base64);
+//                alert(words);
+//                var parseStr = words.toString(CryptoJS.enc.Utf8);
+//                alert(parseStr);
+                var signature = sign.sign('nietai', CryptoJS.MD5, "md5");
+//                alert(signature);
+                var publicKey="MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDA4acn6IGiudGhbS6gxu12j2TXU1kc+ixnZf03TKdlCuIW4lmh29qC8ZKuFMMA6yvOKRxeWzNRioEgl0+qRnqB5+JV0lr42H+imCEZ7Azx55WMS8KB3jIKdxaVsabgxT1QRrJS1iWfgfZey9kRjuc7f9jl/FIOeno8UmC2FWKMRQIDAQAB";
+//                sign.setPublicKey(publicKey);
+                var verify = new JSEncrypt();
+                verify.setPublicKey(publicKey);
+//                var signature = $("#verify").val();
+                alert(signature);
+                var verified  = verify.verify('nietai',signature,CryptoJS.MD5);
+                alert(verified );
+//                $('#password').val(encrypted);
+//                $("#form").submit();
+                // Decrypt with the private key...
+//                var decrypt = new JSEncrypt();
+//                decrypt.setPrivateKey($('#privkey').val());
+//                var uncrypted = decrypt.decrypt(encrypted);
+
+                // Now a simple check to see if the round-trip worked.
+//                if (uncrypted == $('#input').val()) {
+//                    alert('It works!!!');
+//                }
+//                else {
+//                    alert('Something went wrong....');
+//                }
+            });
+        });
+    </script>
+</body>
+</html>

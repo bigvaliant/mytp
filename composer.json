@@ -18,7 +18,9 @@
     "require": {
         "php": ">=5.4.0",
         "topthink/framework": "5.0.*",
-        "topthink/think-image": "^1.0"
+        "topthink/think-image": "^1.0",
+        "topthink/think-queue": "v1.1.5",
+        "phpmailer/phpmailer": "v6.0"
     },
     "autoload": {
         "psr-4": {

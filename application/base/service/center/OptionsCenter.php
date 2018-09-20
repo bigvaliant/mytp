@@ -12,4 +12,7 @@ namespace app\base\service\center;
 class OptionsCenter
 {
     static public $fieldTerminalCode = 'asd';
+    //redis≈‰÷√
+    static public $redisInfoCenter = array();
+    static public $infoToken = 'TK_';
 }
